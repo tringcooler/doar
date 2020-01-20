@@ -3,6 +3,10 @@ define(function (require) {$(document).ready(function() {
     
     (function() {
         foo = new (require('core/deck'))();
+        foo.put('d');
+        foo.put('c');
+        foo.put('b');
+        foo.put('a');
     })();
     
 });});
