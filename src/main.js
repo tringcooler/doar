@@ -7,6 +7,10 @@ define(function (require) {$(document).ready(function() {
         foo.put('c');
         foo.put('b');
         foo.put('a');
+    });
+    
+    (() => {
+        foo = new (require('core/tagtab'))();
     })();
     
 });});
