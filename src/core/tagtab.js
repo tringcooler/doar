@@ -78,15 +78,11 @@ define(function(require) {
     function _parse_btr(tr) {
         let rtr = [];
         for(let e of tr) {
-            let lst_r = rtr[rtr.length - 1];
             if(typeof(e) == 'string') {
                 let er = e.split(TS_SEP);
                 for(let i = er.length - 1; i >= 0 ; i--) {
                     er[i] = er[i].trim();
-                    if(i == 0 && lst_r instanceof Array) {
-                        if(lst_r.length <= 0) {
-                            rtr.pop();
-                        }
+                    if(i == 0 && rtr[rtr.length - 1] instanceof Array) {
                         if(!er[i]) {
                             er.shift();
                         } else {
@@ -98,7 +94,7 @@ define(function(require) {
                 }
                 rtr = rtr.concat(er);
             } else {
-                if(!lst_r) {
+                if(!rtr[rtr.length - 1]) {
                     rtr.pop();
                 } else {
                     return null;
@@ -120,7 +116,7 @@ define(function(require) {
         return rtr;
     }
     
-    console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:():fff):ggg)")));
+    //console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:(  ):():ff:f):ggg)")));
     
     class c_tag {
         
