@@ -75,13 +75,13 @@ define(function(require) {
         return tr;
     }
     
-    function _parse_btr(tr) {
+    function _parse_btr(tr, cb) {
         let rtr = [];
         for(let e of tr) {
             if(typeof(e) == 'string') {
                 let er = e.split(TS_SEP);
                 for(let i = er.length - 1; i >= 0 ; i--) {
-                    er[i] = er[i].trim();
+                    er[i] = cb(er[i].trim());
                     if(i == 0 && rtr[rtr.length - 1] instanceof Array) {
                         if(!er[i]) {
                             er.shift();
@@ -99,7 +99,7 @@ define(function(require) {
                 } else {
                     return null;
                 }
-                let nr = _parse_btr(e);
+                let nr = _parse_btr(e, cb);
                 if(nr === null) {
                     return null;
                 }
@@ -116,7 +116,7 @@ define(function(require) {
         return rtr;
     }
     
-    //console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:(  ):():ff:f):ggg)")));
+    //console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:(  ):():ff:f):ggg)"), a=>a?a+'!':null));
     
     class c_tag {
         
