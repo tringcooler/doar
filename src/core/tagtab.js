@@ -39,36 +39,38 @@ define(function(require) {
         
     }
     
-    function _bs2tr(src) {
-        let tr = [];
-        let bstr = src
-        while(bstr) {
-            let _match = false;
-            let _synerr = false;
-            bstr = bstr.replace(/(.*?)\((.*)\)/, (m, g1, g2) => {
-                _match = true;
-                tr.push(g1);
-                let _subs = _bs2tr(g2);
-                if(_subs === null) {
-                    _synerr = true;
-                    return '';
-                }
-                tr.push(_subs);
-                return '';
-            });
-            if(!_match) {
-                if(_synerr || bstr.match(/\(/) || bstr.match(/\)/)) {
-                    return null;
-                } else {
-                    tr.push(bstr);
-                    break;
-                }
+    function _bs2tr(src, tr, trstk) {
+        let bui = src.indexOf('(');
+        let bdi = src.indexOf(')');
+        if(bdi >= 0 && (bdi < bui || bui < 0)) {
+            if(trstk.length <= 0) {
+                return null;
             }
+            let s1 = src.slice(0, bdi);
+            if(s1) {
+                tr.push(s1);
+            }
+            return _bs2tr(src.slice(bdi + 1), trstk.pop(), trstk);
+        }
+        if(bui >= 0) {
+            let s1 = src.slice(0, bui);
+            if(s1) {
+                tr.push(s1);
+            }
+            let trn = [];
+            tr.push(trn);
+            trstk.push(tr);
+            return _bs2tr(src.slice(bui + 1), trn, trstk);
+        }
+        if(src) {
+            tr.push(src);
         }
         return tr;
     }
     bs2tr = _bs2tr;
-    console.log(_bs2tr("aaaa(bbb(c))ddd((ee()fff)ggg)"));
+    bstst = ["aaaa(bbb(c))ddd((ee()fff)ggg)", [], []]
+    console.log(_bs2tr(...bstst));
+    console.log(bstst);
     
     class c_tag {
         
