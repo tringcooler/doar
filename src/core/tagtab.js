@@ -3,18 +3,20 @@ define(function(require) {
     const [
     
         // for common
-        PR_STMP,
     
         // for tag node
         PR_PREV,
         MTD_PREV, MTD_AFTER,
         
         // for tag
+        CST_TAGNODE_LIST,
         PR_TAB,
         MTD_COMPILE,
+        BDMTD_TAGNODE,
         
         // for tag tab
-        MTD_NEWSTAMP,
+        PL_TAGNODE, PL_TAG,
+        MTD_REGNODE,
         
     ] = require('core/util').symgen();
     
@@ -85,7 +87,7 @@ define(function(require) {
                 let [_rmhd, _rmtl] = [false, false];
                 let er = e.split(TS_SEP);
                 for(let i = 0; i < er.length; i++) {
-                    er[i] = cb(er[i].trim());
+                    er[i] = cb ? cb(er[i].trim()) : er[i].trim();
                     let _rmer = false;
                     if(i == 0) {
                         if(ei > 0) {
@@ -144,10 +146,24 @@ define(function(require) {
             this[PR_TAB] = tab;
         }
         
+        CST_TAGNODE_LIST = [
+            [null, null, c_tagnode],
+        ];
+        
+        [BDMTD_TAGNODE] = (name) => {
+            for(let [f_chk, f_key, cls_tn] of this[CST_TAGNODE_LIST]) {
+                if(!f_chk || f_chk(name)) {
+                    let key = f_key ? f_key(name) : name;
+                    let node = this[PR_TAB][MTD_REGNODE](key, cls_tn)
+                    return node;
+                }
+            }
+        }
+        
         [MTD_COMPILE](src) {
             let btr = _bs2tr(src);
             if(btr === null) return null;
-            let rtr = _parse_btr(btr);
+            let rtr = _parse_btr(btr, _new_tagnode);
         }
         
     }
@@ -155,11 +171,11 @@ define(function(require) {
     class c_tagtab {
         
         constructor() {
-            this[PR_STMP] = 1;
+            this[PL_TAGNODE] = {};
         }
         
-        [MTD_NEWSTAMP]() {
-            return this[PR_STMP] ++;
+        [MTD_REGNODE]() {
+            
         }
         
     }
