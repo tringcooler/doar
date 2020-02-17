@@ -77,40 +77,60 @@ define(function(require) {
     
     function _parse_btr(tr, cb) {
         let rtr = [];
-        for(let e of tr) {
+        let lst_arr = false;
+        for(let ei = 0; ei < tr.length; ei++) {
+            e = tr[ei];
             if(typeof(e) == 'string') {
+                lst_arr = false;
+                let [_rmhd, _rmtl] = [false, false];
                 let er = e.split(TS_SEP);
-                for(let i = er.length - 1; i >= 0 ; i--) {
+                for(let i = 0; i < er.length; i++) {
                     er[i] = cb(er[i].trim());
-                    if(i == 0 && rtr[rtr.length - 1] instanceof Array) {
-                        if(!er[i]) {
-                            er.shift();
-                        } else {
-                            return null;
+                    let _rmer = false;
+                    if(i == 0) {
+                        if(ei > 0) {
+                            if(!er[i]) {
+                                _rmhd = true;
+                                _rmer = true;
+                            } else {
+                                return null;
+                            }
                         }
-                    } else if(i < er.length - 1 && !er[i]) {
-                        return null;
+                    } else if(i == er.length - 1) {
+                        if(ei < tr.length - 1) {
+                            if(!er[i]) {
+                                _rmtl = true;
+                                _rmer = true;
+                            } else {
+                                return null;
+                            }
+                        }
                     }
+                    if(!_rmer && !er[i]) {
+                        if(er.length == 1) {
+                            er.pop();
+                        } else {
+                            return null
+                        }
+                    }
+                }
+                if(_rmhd) {
+                    er.shift();
+                }
+                if(_rmtl) {
+                    er.pop();
                 }
                 rtr = rtr.concat(er);
             } else {
-                if(!rtr[rtr.length - 1]) {
-                    rtr.pop();
-                } else {
+                if(lst_arr) {
                     return null;
                 }
+                lst_arr = true;
                 let nr = _parse_btr(e, cb);
                 if(nr === null) {
                     return null;
                 }
                 rtr.push(nr);
-            }
-        }
-        if(!rtr[rtr.length - 1]) {
-            if(rtr.length > 1) {
-                return null;
-            } else {
-                rtr.pop();
             }
         }
         return rtr;
