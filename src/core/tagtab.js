@@ -12,7 +12,7 @@ define(function(require) {
         CST_TAGNODE_LIST,
         PR_TAB,
         MTD_COMPILE,
-        BDMTD_TAGNODE,
+        BDMTD_NODE_PARSE,
         
         // for tag tab
         PL_TAGNODE, PL_TAG,
@@ -43,9 +43,9 @@ define(function(require) {
     }
     
     const [
-        TS_SEP, TS_INV,
+        TS_SEP, TS_INV, TS_CLS,
     ] = [
-        ':', '$',
+        ':', '$', '*',
     ];
     
     function _bs2tr(src, tr = [], trstk = []) {
@@ -142,28 +142,21 @@ define(function(require) {
     
     class c_tag {
         
-        constructor(src, tab) {
+        constructor(tab, src, ...args) {
             this[PR_TAB] = tab;
         }
         
-        CST_TAGNODE_LIST = [
-            [null, null, c_tagnode],
-        ];
+        CST_TAGNODE_CNAME = {
+        };
         
-        [BDMTD_TAGNODE] = (name) => {
-            for(let [f_chk, f_key, cls_tn] of this[CST_TAGNODE_LIST]) {
-                if(!f_chk || f_chk(name)) {
-                    let key = f_key ? f_key(name) : name;
-                    let node = this[PR_TAB][MTD_REGNODE](key, cls_tn)
-                    return node;
-                }
-            }
+        [BDMTD_NODE_PARSE] = (name) => {
+            
         }
         
-        [MTD_COMPILE](src) {
+        [MTD_COMPILE](src, args) {
             let btr = _bs2tr(src);
             if(btr === null) return null;
-            let rtr = _parse_btr(btr, _new_tagnode);
+            let rtr = _parse_btr(btr, this[BDMTD_NODE_PARSE]);
         }
         
     }
