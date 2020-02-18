@@ -48,33 +48,49 @@ define(function(require) {
         ':', '$', '*',
     ];
     
-    function _bs2tr(src, tr = [], trstk = []) {
-        let bui = src.indexOf('(');
-        let bdi = src.indexOf(')');
-        if(bdi >= 0 && (bdi < bui || bui < 0)) {
-            if(trstk.length <= 0) {
+    function _bs2tr(src, tr = [], trstk = [], is_first = true, nd_cb = null, sc_cb = null) {
+        let bui = src.indexOf('('),
+            bdi = src.indexOf(')'),
+            bi = bdi < 0 ? bui : bui < 0 ? bdi : bdi < bui ? bdi : bui,
+            s1 = src;
+        if(bi >= 0) {
+            s1 = src.slice(0, bi);
+        }
+        if(nd_cb) {
+            let _r = nd_cb(tr, s1, is_first, bi === bdi);
+            if(_r === null) {
                 return null;
             }
-            let s1 = src.slice(0, bdi);
+        } else {            
             if(s1) {
                 tr.push(s1);
             }
-            return _bs2tr(src.slice(bdi + 1), trstk.pop(), trstk);
         }
-        if(bui >= 0) {
-            let s1 = src.slice(0, bui);
-            if(s1) {
-                tr.push(s1);
+        if(bdi < bui || bui < 0) {
+            if(bdi < 0) {
+                return tr;
+            } else {
+                if(trstk.length <= 0) {
+                    return null;
+                }
+                return _bs2tr(src.slice(bdi + 1), trstk.pop(), trstk, false, nd_cb, sc_cb);
             }
+        } else {
             let trn = [];
             tr.push(trn);
             trstk.push(tr);
-            return _bs2tr(src.slice(bui + 1), trn, trstk);
-        }
-        if(src) {
-            tr.push(src);
+            return _bs2tr(src.slice(bui + 1), trn, trstk, true, nd_cb, sc_cb);
         }
         return tr;
+    }
+    
+    function _parse_btr_node_hndl(cb, src, is_first, is_last) {
+        let nodes = src.split(TS_SEP);
+        let rtr = [];
+        for(let nd of nodes) {
+            nd = nd.trim();
+            
+        }
     }
     
     function _parse_btr(tr, cb) {
@@ -138,7 +154,7 @@ define(function(require) {
         return rtr;
     }
     
-    //console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:(  ):():ff:f):ggg)"), a=>a?a+'!':null));
+    console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:(  ):():ff:f):ggg)"), a=>a?a+'!':null));
     
     class c_tag {
         
