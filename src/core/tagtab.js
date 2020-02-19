@@ -48,13 +48,59 @@ define(function(require) {
         ':', '$', '*',
     ];
     
+    class c_tag_syntax_parser {
+        
+        constructor() {
+            this[PL_SUB] = [];
+            this[PR_KEY] = '';
+        }
+        
+        [MTD_PARSE_LAYER](src, stk = [], is_first = true) {
+            let bui = src.indexOf('('),
+                bdi = src.indexOf(')'),
+                bi = bdi < 0 ? bui : bui < 0 ? bdi : bdi < bui ? bdi : bui,
+                is_end = bi < 0,
+                is_last = bi === bdi,
+                next_is_first = bi === bui,
+                s1 = is_end ? src : src.slice(0, bi),
+                s2 = is_end ? '' : src.slice(bi + 1);
+            let nr = this[MTD_PARSE_NODES](s1, is_first, is_last);
+            if(nr === null) {
+                return null;
+            } else if(nr === true) {
+                return this;
+            }
+            let nxt;
+            if(is_last) {
+                if(is_end) {
+                    this[MTD_PARSE_SUB]();
+                    return this;
+                }
+                if(srk.length <= 0) {
+                    return null;
+                }
+                nxt = stk.pop();
+            } else {
+                nxt = new c_tag_syntax_parser();
+                this[MTD_APPEND](nxt);
+                stk.push(this);
+            }
+            return nxt[MTD_PARSE_LAYER](s2, stk, next_is_first);
+        }
+        
+        [MTD_PARSE_NODES](src, is_first, is_last) {
+            
+        }
+        
+    }
+    
     function _bs2tr(src, tr = [], trstk = [], is_first = true, nd_cb = null, sc_cb = null) {
         let bui = src.indexOf('('),
             bdi = src.indexOf(')'),
             bi = bdi < 0 ? bui : bui < 0 ? bdi : bdi < bui ? bdi : bui,
             s1 = src;
         if(bi >= 0) {
-            s1 = src.slice(0, bi);
+            s1 = 
         }
         if(nd_cb) {
             let _r = nd_cb(tr, s1, is_first, bi === bdi);
