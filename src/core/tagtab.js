@@ -43,12 +43,28 @@ define(function(require) {
     }
     
     const [
-        TS_SEP, TS_INV, TS_CLS,
+        TS_L_IN, TS_L_OUT, TS_SEP, TS_INV, TS_CLS,
     ] = [
-        ':', '$', '*',
+        '(', ')', ':', '$', '*',
     ];
     
-    class c_tag_syntax_parser {
+    class c_tag_syntax_s_node {
+        
+        constructor(src) {
+            this[PR_KEY] = '';
+            this[MTD_PARSE](src);
+        }
+        
+        [MTD_PARSE](src) {
+            let nodes = src.split(TS_SEP);
+            for(let nd of nodes) {
+                
+            }
+        }
+        
+    }
+    
+    class c_tag_syntax_a_node {
         
         constructor() {
             this[PL_SUB] = [];
@@ -56,8 +72,8 @@ define(function(require) {
         }
         
         [MTD_PARSE_LAYER](src, stk = [], is_first = true) {
-            let bui = src.indexOf('('),
-                bdi = src.indexOf(')'),
+            let bui = src.indexOf(TS_L_IN),
+                bdi = src.indexOf(TS_L_OUT),
                 bi = bdi < 0 ? bui : bui < 0 ? bdi : bdi < bui ? bdi : bui,
                 is_end = bi < 0,
                 is_last = bi === bdi,
@@ -67,14 +83,11 @@ define(function(require) {
             let nr = this[MTD_PARSE_NODES](s1, is_first, is_last);
             if(nr === null) {
                 return null;
-            } else if(nr === true) {
-                return this;
             }
             let nxt;
             if(is_last) {
                 if(is_end) {
-                    this[MTD_PARSE_SUB]();
-                    return this;
+                    return this[MTD_PARSE_SUB]();
                 }
                 if(srk.length <= 0) {
                     return null;
