@@ -69,10 +69,9 @@ define(function(require) {
             }
             let nxt;
             if(is_last) {
-                if(is_end) {
+                if(stk.length === 0 && is_end) {
                     return this[MTD_PARSE_POST]();
-                }
-                if(srk.length <= 0) {
+                } else if(stk.length === 0 || is_end) {
                     return null;
                 }
                 nxt = stk.pop();
@@ -221,17 +220,16 @@ define(function(require) {
             this[PR_TAB] = tab;
         }
         
-        CST_TAGNODE_CNAME = {
-        };
-        
-        [BDMTD_NODE_PARSE] = (name) => {
-            
+        and(dst) {
         }
         
-        [MTD_COMPILE](src, args) {
-            let btr = _bs2tr(src);
-            if(btr === null) return null;
-            let rtr = _parse_btr(btr, this[BDMTD_NODE_PARSE]);
+        add(dst) {
+        }
+        
+        concat(dst) {
+        }
+        
+        insert(dst) {
         }
         
     }
