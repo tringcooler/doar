@@ -3,10 +3,6 @@ define(function(require) {
     const [
     
         // for common
-        PR_KEY,
-        
-        // for fg2 float key
-        CST_MULT,
     
         // for tag node
         PR_PREV,
@@ -18,7 +14,7 @@ define(function(require) {
         
         // for tag
         CST_TAGNODE_LIST,
-        PR_TAB,
+        PR_TAB, PR_KEY,
         MTD_COMPILE,
         BDMTD_NODE_PARSE,
         
@@ -29,36 +25,18 @@ define(function(require) {
     ] = require('core/util').symgen();
     
     // freegroup-2 float key in real field
-    class c_fg2_fl_key {
-        
-        [CST_MULT] = Math.PI / 3
-        
-        constructor(key = 1) {
-            this[PR_KEY] = key;
-        }
-        
-        a() {
-            return new c_fg2_fl_key(this[PR_KEY] + 1);
-        }
-        
-        b() {
-            return new c_fg2_fl_key(this[PR_KEY] * this[CST_MULT]);
-        }
-        
-        key() {
-            return this[PR_KEY];
-        }
-        
-        merge(...dsts) {
-            let rkey = 1 / this[PR_KEY];
-            for(let dst of dsts) {
-                rkey += 1 / dst.key();
+    const CST_FG2_FK_MULT = Math.PI / 3;
+    const f_fg2_fl_key = {
+        a: key => key + 1,
+        b: key => key * Math.PI / 3,
+        merge(...keys) {
+            let rkey = 0;
+            for(let key of keys) {
+                rkey += 1 / key;
             }
             return rkey;
-        }
-        
-    }
-    cffk = c_fg2_fl_key;
+        },
+    };
     
     class c_tagnode {
         
