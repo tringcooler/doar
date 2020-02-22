@@ -4,6 +4,7 @@ define(function(require) {
     
         // for common
         PR_TAB,
+        MTD_APPEND,
     
         // for tag node
         PR_PREV,
@@ -13,7 +14,6 @@ define(function(require) {
         PR_KEY, PR_TAG,
         PL_SUB,
         MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
-        MTD_APPEND,
         
         // for tag
         CST_TAGNODE_LIST,
@@ -146,132 +146,24 @@ define(function(require) {
         
         [MTD_PARSE_POST]() {
             let key = this[PR_KEY];
-            let tag = this[PR_TAB].get_tag(key);
+            let tag = this[PR_TAB][MTD_GET_TAG](key);
             if(!tag) {
-                tag = this[PR_TAB].new_tag();
+                tag = this[PR_TAB][MTD_NEW_TAG]();
                 for(let [has_sub, skey] of this[PL_SUB]) {
                     let stag;
                     if(has_sub) {
-                        stag = this[PR_TAB].get_tag(skey);
+                        stag = this[PR_TAB][MTD_GET_TAG](skey);
                     } else {
-                        stag = this[PR_TAB].mono_tag(skey);
+                        stag = this[PR_TAB][MTD_MONO_TAG](skey);
                     }
-                    tag.append(stag);
+                    tag[MTD_APPEND](stag);
                 }
-                this[PR_TAB].reg_tag(key, tag);
+                this[PR_TAB][MTD_REG_TAG](key, tag);
             }
             this[PR_TAG] = tag;
         }
         
     }
-    
-    function _bs2tr(src, tr = [], trstk = [], is_first = true, nd_cb = null, sc_cb = null) {
-        let bui = src.indexOf('('),
-            bdi = src.indexOf(')'),
-            bi = bdi < 0 ? bui : bui < 0 ? bdi : bdi < bui ? bdi : bui,
-            s1 = src;
-        if(bi >= 0) {
-            //s1 = 
-        }
-        if(nd_cb) {
-            let _r = nd_cb(tr, s1, is_first, bi === bdi);
-            if(_r === null) {
-                return null;
-            }
-        } else {            
-            if(s1) {
-                tr.push(s1);
-            }
-        }
-        if(bdi < bui || bui < 0) {
-            if(bdi < 0) {
-                return tr;
-            } else {
-                if(trstk.length <= 0) {
-                    return null;
-                }
-                return _bs2tr(src.slice(bdi + 1), trstk.pop(), trstk, false, nd_cb, sc_cb);
-            }
-        } else {
-            let trn = [];
-            tr.push(trn);
-            trstk.push(tr);
-            return _bs2tr(src.slice(bui + 1), trn, trstk, true, nd_cb, sc_cb);
-        }
-        return tr;
-    }
-    
-    function _parse_btr_node_hndl(cb, src, is_first, is_last) {
-        let nodes = src.split(TS_SEP);
-        let rtr = [];
-        for(let nd of nodes) {
-            nd = nd.trim();
-            
-        }
-    }
-    
-    function _parse_btr(tr, cb) {
-        let rtr = [];
-        let lst_arr = false;
-        for(let ei = 0; ei < tr.length; ei++) {
-            e = tr[ei];
-            if(typeof(e) == 'string') {
-                lst_arr = false;
-                let [_rmhd, _rmtl] = [false, false];
-                let er = e.split(TS_SEP);
-                for(let i = 0; i < er.length; i++) {
-                    er[i] = cb ? cb(er[i].trim()) : er[i].trim();
-                    let _rmer = false;
-                    if(i == 0) {
-                        if(ei > 0) {
-                            if(!er[i]) {
-                                _rmhd = true;
-                                _rmer = true;
-                            } else {
-                                return null;
-                            }
-                        }
-                    } else if(i == er.length - 1) {
-                        if(ei < tr.length - 1) {
-                            if(!er[i]) {
-                                _rmtl = true;
-                                _rmer = true;
-                            } else {
-                                return null;
-                            }
-                        }
-                    }
-                    if(!_rmer && !er[i]) {
-                        if(er.length == 1) {
-                            er.pop();
-                        } else {
-                            return null
-                        }
-                    }
-                }
-                if(_rmhd) {
-                    er.shift();
-                }
-                if(_rmtl) {
-                    er.pop();
-                }
-                rtr = rtr.concat(er);
-            } else {
-                if(lst_arr) {
-                    return null;
-                }
-                lst_arr = true;
-                let nr = _parse_btr(e, cb);
-                if(nr === null) {
-                    return null;
-                }
-                rtr.push(nr);
-            }
-        }
-        return rtr;
-    }
-    
-    console.log(_parse_btr(_bs2tr("aaaa:(bbb:(c)):ddd:((ee:(  ):():ff:f):ggg)"), a=>a?a+'!':null));
     
     class c_tag {
         
