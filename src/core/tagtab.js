@@ -13,6 +13,7 @@ define(function(require) {
         PR_KEY, PR_TAG,
         PL_SUB,
         MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
+        MTD_APPEND,
         
         // for tag
         CST_TAGNODE_LIST,
@@ -27,7 +28,7 @@ define(function(require) {
     
     // freegroup-2 float key in real field
     const CST_FG2_FK_MULT = Math.PI / 3;
-    const f_fg2_fl_key = {
+    const f_fg2_fl = {
         a: key => key + 1,
         b: key => key * CST_FG2_FK_MULT,
         merge(...keys) {
@@ -99,9 +100,9 @@ define(function(require) {
                     return null;
                 }
                 nxt = stk.pop();
+                nxt[MTD_APPEND](this);
             } else {
                 nxt = new c_tag_syntax_parser(this[PR_TAB]);
-                this[MTD_APPEND](nxt);
                 stk.push(this);
             }
             return nxt[MTD_PARSE_LAYER](s2, stk, next_is_first);
@@ -122,20 +123,44 @@ define(function(require) {
             }
         }
         
-        [MTD_PARSE_POST]() {
-            for(let sub of this[PL_SUB]) {
-                let key, tag;
-                if(sub instanceof c_tag_syntax_parser) {
-                    key = sub[PR_KEY];
-                    tag = sub[PR_TAG];
+        [MTD_APPEND](sub) {
+            let skey;
+            let has_sub = (sub instanceof c_tag_syntax_parser);
+            if(has_sub) {
+                if(sub[PL_SUB].length > 1) {
+                    skey = TS_L_IN + sub[PR_KEY] + TS_L_OUT;
                 } else {
-                    key = sub;
-                    tag = this[PR_TAB].get_tag(key);
+                    skey = sub[PR_KEY];
+                    has_sub = false;
                 }
-                if(!tag) {
-                    return null;
-                }
+            } else {
+                skey = sub;
             }
+            if(this[PR_KEY]) {
+                this[PR_KEY] += TS_SEP + skey;
+            } else {
+                this[PR_KEY] += skey;
+            }
+            this[PL_SUB].push([has_sub, skey]);
+        }
+        
+        [MTD_PARSE_POST]() {
+            let key = this[PR_KEY];
+            let tag = this[PR_TAB].get_tag(key);
+            if(!tag) {
+                tag = this[PR_TAB].new_tag();
+                for(let [has_sub, skey] of this[PL_SUB]) {
+                    let stag;
+                    if(has_sub) {
+                        stag = this[PR_TAB].get_tag(skey);
+                    } else {
+                        stag = this[PR_TAB].mono_tag(skey);
+                    }
+                    tag.append(stag);
+                }
+                this[PR_TAB].reg_tag(key, tag);
+            }
+            this[PR_TAG] = tag;
         }
         
     }
