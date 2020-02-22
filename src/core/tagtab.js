@@ -3,10 +3,18 @@ define(function(require) {
     const [
     
         // for common
+        PR_KEY,
+        
+        // for fg2 float key
+        CST_MULT,
     
         // for tag node
         PR_PREV,
         MTD_PREV, MTD_AFTER,
+        
+        // for tag syntax parser
+        PL_SUB,
+        MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
         
         // for tag
         CST_TAGNODE_LIST,
@@ -19,6 +27,38 @@ define(function(require) {
         MTD_REGNODE,
         
     ] = require('core/util').symgen();
+    
+    // freegroup-2 float key in real field
+    class c_fg2_fl_key {
+        
+        [CST_MULT] = Math.PI / 3
+        
+        constructor(key = 1) {
+            this[PR_KEY] = key;
+        }
+        
+        a() {
+            return new c_fg2_fl_key(this[PR_KEY] + 1);
+        }
+        
+        b() {
+            return new c_fg2_fl_key(this[PR_KEY] * this[CST_MULT]);
+        }
+        
+        key() {
+            return this[PR_KEY];
+        }
+        
+        merge(...dsts) {
+            let rkey = 1 / this[PR_KEY];
+            for(let dst of dsts) {
+                rkey += 1 / dst.key();
+            }
+            return rkey;
+        }
+        
+    }
+    cffk = c_fg2_fl_key;
     
     class c_tagnode {
         
@@ -112,7 +152,7 @@ define(function(require) {
             bi = bdi < 0 ? bui : bui < 0 ? bdi : bdi < bui ? bdi : bui,
             s1 = src;
         if(bi >= 0) {
-            s1 = 
+            //s1 = 
         }
         if(nd_cb) {
             let _r = nd_cb(tr, s1, is_first, bi === bdi);
