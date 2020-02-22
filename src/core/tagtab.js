@@ -25,16 +25,18 @@ define(function(require) {
     ] = require('core/util').symgen();
     
     // freegroup-2 float key in real field
-    const CST_FG2_FK_MULT = Math.PI / 3;
+    const
+        CST_FG2_FK_MULT = Math.PI / 3,
+        CST_FG2_FK_MULT_M = Math.E / 2;
     const f_fg2_fl_key = {
         a: key => key + 1,
-        b: key => key * Math.PI / 3,
+        b: key => key * CST_FG2_FK_MULT,
         merge(...keys) {
             let rkey = 0;
             for(let key of keys) {
                 rkey += 1 / key;
             }
-            return rkey;
+            return rkey * CST_FG2_FK_MULT_M;
         },
     };
     
