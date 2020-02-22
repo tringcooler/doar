@@ -3,18 +3,19 @@ define(function(require) {
     const [
     
         // for common
+        PR_TAB,
     
         // for tag node
         PR_PREV,
         MTD_PREV, MTD_AFTER,
         
         // for tag syntax parser
+        PR_KEY, PR_TAG,
         PL_SUB,
         MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
         
         // for tag
         CST_TAGNODE_LIST,
-        PR_TAB, PR_KEY,
         MTD_COMPILE,
         BDMTD_NODE_PARSE,
         
@@ -68,8 +69,11 @@ define(function(require) {
     
     class c_tag_syntax_parser {
         
-        constructor() {
+        constructor(tab) {
+            this[PR_TAB] = tab;
             this[PL_SUB] = [];
+            this[PR_KEY] = '';
+            this[PR_TAG] = null;
         }
         
         [MTD_PARSE_LAYER](src, stk = [], is_first = true) {
@@ -81,20 +85,22 @@ define(function(require) {
                 next_is_first = bi === bui,
                 s1 = is_end ? src : src.slice(0, bi),
                 s2 = is_end ? '' : src.slice(bi + 1);
-            let nr = this[MTD_PARSE_NODES](s1, is_first, is_last);
-            if(nr === null) {
+            if(this[MTD_PARSE_NODES](s1, is_first, is_last) === null) {
                 return null;
             }
             let nxt;
             if(is_last) {
+                if(this[MTD_PARSE_POST]() === null) {
+                    return null;
+                }
                 if(stk.length === 0 && is_end) {
-                    return this[MTD_PARSE_POST]();
+                    return this;
                 } else if(stk.length === 0 || is_end) {
                     return null;
                 }
                 nxt = stk.pop();
             } else {
-                nxt = new c_tag_syntax_parser();
+                nxt = new c_tag_syntax_parser(this[PR_TAB]);
                 this[MTD_APPEND](nxt);
                 stk.push(this);
             }
@@ -117,9 +123,19 @@ define(function(require) {
         }
         
         [MTD_PARSE_POST]() {
-            let key = ''
-            let tag = new c_tag();
-            
+            for(let sub of this[PL_SUB]) {
+                let key, tag;
+                if(sub instanceof c_tag_syntax_parser) {
+                    key = sub[PR_KEY];
+                    tag = sub[PR_TAG];
+                } else {
+                    key = sub;
+                    tag = this[PR_TAB].get_tag(key);
+                }
+                if(!tag) {
+                    return null;
+                }
+            }
         }
         
     }
