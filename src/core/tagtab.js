@@ -3,22 +3,20 @@ define(function(require) {
     const [
     
         // for common
-        PR_TAB,
+        PR_TAB, PR_ORDER,
+        PL_SUB,
         MTD_APPEND,
     
         // for tag node
-        PR_PREV,
+        PR_PREV, PR_SL_ORDER,
         MTD_PREV, MTD_AFTER,
         
         // for tag syntax parser
         PR_KEY, PR_TAG,
-        PL_SUB,
         MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
         
         // for tag
-        CST_TAGNODE_LIST,
-        MTD_COMPILE,
-        BDMTD_NODE_PARSE,
+        MTD_MONO_NODE,
         
         // for tag tab
         PL_TAGNODE, PL_TAG,
@@ -38,16 +36,26 @@ define(function(require) {
             }
             return rkey;
         },
+        append: (src, dst) => src + 1 / dst,
     };
     
+    let id_tagnode = 1;
     class c_tagnode {
         
-        constructor() {
-            this[MTD_PREV](null);
+        constructor(prev = null) {
+            this[MTD_PREV](prev);
         }
         
         [MTD_PREV](prev) {
+            //assert(!(PR_PREV in this));
             this[PR_PREV] = prev;
+            if(prev) {
+                this[PR_ORDER] = f_fg2_fl.a(prev[PR_SL_ORDER]);
+                prev[PR_SL_ORDER] = this[PR_ORDER];
+                this[PR_SL_ORDER] = f_fg2_fl.b(this[PR_ORDER]);
+            } else {
+                this[PR_ORDER] = id_tagnode ++;
+            }
         }
         
         [MTD_AFTER](dst) {
@@ -167,20 +175,30 @@ define(function(require) {
     
     class c_tag {
         
-        constructor(tab, src, ...args) {
+        constructor(tab) {
             this[PR_TAB] = tab;
+            this[PL_SUB] = [];
+            this[PR_ORDER] = 0;
+            //this[FLG_MONO] = false;
         }
         
-        and(dst) {
+        [MTD_MONO_NODE](node) {
+            //assert(this[PL_SUB].length === 0);
+            this[PL_SUB].push(node);
+            this[PR_ORDER] = node[PR_ORDER];
+            //this[FLG_MONO] = true;
         }
         
-        add(dst) {
-        }
-        
-        concat(dst) {
-        }
-        
-        insert(dst) {
+        [MTD_APPEND](dst) {
+            //assert(!this[FLG_MONO]);
+            let lsb = this[PL_SUB].length;
+            for(let i = 0; i < lsb; i ++) {
+                if(dst[PR_ORDER] < this[PL_SUB][i][PR_ORDER]) {
+                    break
+                }
+            }
+            this[PL_SUB].splice(i, 0, dst);
+            this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], dst[PR_ORDER]);
         }
         
     }
