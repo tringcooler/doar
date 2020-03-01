@@ -26,18 +26,20 @@ define(function(require) {
     
     // freegroup-2 float key in real field
     const CST_FG2_FK_MULT = Math.PI / 3;
-    const f_fg2_fl = {
-        a: key => key + 1,
-        b: key => key * CST_FG2_FK_MULT,
-        merge(...keys) {
-            let rkey = 0;
-            for(let key of keys) {
-                rkey += 1 / key;
-            }
-            return rkey;
-        },
-        append: (src, dst) => src + 1 / dst,
+    const CST_FG2_FK_ADD = Math.E / 3;
+    const CST_FG2_FK_MXPREC = 15;
+    const f_fg2_fl = {};
+    f_fg2_fl.a = key => key + 1;
+    f_fg2_fl.b = key => key * CST_FG2_FK_MULT;
+    f_fg2_fl.append = (src, dst) => src + 1 / (dst + CST_FG2_FK_ADD);
+    f_fg2_fl.merge = (...keys) => {
+        let rkey = 0;
+        for(let key of keys) {
+            rkey = f_fg2_fl.append(rkey, key);
+        }
+        return rkey;
     };
+    f_fg2_fl.v2k = v => v.toPrecision(CST_FG2_FK_MXPREC);
     
     let id_tagnode = 1;
     class c_tagnode {
