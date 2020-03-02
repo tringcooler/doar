@@ -19,7 +19,7 @@ define(function(require) {
         MTD_MONO_NODE, MTD_COMBINE, MTD_MERGE,
         
         // for tag tab
-        PL_TAGNODE, PL_ORDER, PL_TAG_BY_ORDER,
+        PL_TAGNODE, PL_TAGORDER, PL_TAG_BY_ORDER,
         MTD_MONO_TAG, MTD_GET_TAG, MTD_NEW_TAG,
         
     ] = require('core/util').symgen();
@@ -130,6 +130,9 @@ define(function(require) {
                     continue;
                 }
                 let tag = this[PR_TAB][MTD_MONO_TAG](nd);
+                if(tag === null) {
+                    return null;
+                }
                 this[MTD_APPEND](tag);
             }
         }
@@ -232,20 +235,43 @@ define(function(require) {
         
         constructor() {
             this[PL_TAGNODE] = {};
-            this[PL_ORDER] = {};
+            this[PL_TAGORDER] = {};
             this[PL_TAG_BY_ORDER] = {};
         }
         
         [MTD_MONO_TAG](key) {
-            
+            if(key in this[PL_TAGORDER]) {
+                let order = this[PL_TAGORDER][key];
+                //assert(order in this[PL_TAG_BY_ORDER]);
+                return this[PL_TAG_BY_ORDER][order];
+            }
+            if(key in this[PL_TAGNODE]) {
+                let node = this[PL_TAGNODE][key];
+                let tag = new c_tag();
+                tag[MTD_MONO_NODE](node);
+                let order = tag[PR_ORDER];
+                this[PL_TAGORDER][key] = order;
+                this[PL_TAG_BY_ORDER][order] = tag;
+                return tag;
+            }
+            return null;
         }
         
         [MTD_GET_TAG](order) {
-            
+            if(order in this[PL_TAG_BY_ORDER]) {
+                return this[PL_TAG_BY_ORDER][order];
+            } else {
+                return null;
+            }
         }
         
         [MTD_NEW_TAG](order) {
-            
+            if(order in this[PL_TAG_BY_ORDER]) {
+                return null;
+            }
+            let tag = new c_tag();
+            this[PL_TAG_BY_ORDER][order] = tag;
+            return tag;
         }
         
     }
