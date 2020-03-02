@@ -16,11 +16,11 @@ define(function(require) {
         MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
         
         // for tag
-        MTD_MONO_NODE,
+        MTD_MONO_NODE, MTD_MERGE,
         
         // for tag tab
-        PL_TAGNODE, PL_TAG,
-        MTD_REGNODE,
+        PL_TAGNODE, PL_ORDER, PL_TAG_BY_ORDER,
+        MTD_GET_TAG, MTD_REGNODE,
         
     ] = require('core/util').symgen();
     
@@ -155,6 +155,7 @@ define(function(require) {
         }
         
         [MTD_PARSE_POST]() {
+            //TODO: hash cache
             let key = this[PR_KEY];
             let tag = this[PR_TAB][MTD_GET_TAG](key);
             if(!tag) {
@@ -194,7 +195,8 @@ define(function(require) {
         [MTD_APPEND](dst) {
             //assert(!this[FLG_MONO]);
             let lsb = this[PL_SUB].length;
-            for(let i = 0; i < lsb; i ++) {
+            let i;
+            for(i = 0; i < lsb; i ++) {
                 if(dst[PR_ORDER] < this[PL_SUB][i][PR_ORDER]) {
                     break
                 }
@@ -203,12 +205,69 @@ define(function(require) {
             this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], dst[PR_ORDER]);
         }
         
+        [MTD_MERGE](...stags) {
+            let sidxs = [],
+                slens = [],
+                itags = [];
+            let _gsub0 = itag => stags[itag][PL_SUB][sidxs[itag]];
+            for(let i = 0; i < stags.length; i++) {
+                let sl = stags[i][PL_SUB].length;
+                if(sl > 0) {
+                    sidxs.push(0);
+                    slens.push(sl);
+                    itags.push(i);
+                }
+            }
+            //let last_order = 0
+            while(itags.length > 0) {
+                let [min_order, min_ii] = [Infinity, -1];
+                for(let i = 0; i < itags.length; i++) {
+                    let itag = itags[i];
+                    let order0 = _gsub0(itag)[PR_ORDER];
+                    if(order0 < min_order) {
+                        min_order = order0;
+                        min_ii = i;
+                    }
+                }
+                //assert(min_ii >= 0);
+                let itag = itags[min_ii],
+                    sub0 = _gsub0(itag);
+                //assert(sub0[PR_ORDER] > last_order); last_order = sub0[PR_ORDER];
+                this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], sub0[PR_ORDER]);
+                this[PL_SUB].push(sub0);
+                if(++sidxs[itag] >= slens[itag]) {
+                    itags.splice(min_ii, 1);
+                }
+            }
+        }
+        
     }
+    
+    let test_tag_merge = function(n=3) {
+        let tags = [...Array(n)].map(v=>new c_tag(null));
+        for(let i = 1; i < 20; i += 0.5 * n) {
+            for(let j = 0; j < n; j++) {
+                let _t = new c_tag(null);
+                _t[PR_ORDER] = i + 0.5 * j;
+                tags[j][MTD_APPEND](_t);
+            }
+        }
+        let rtag = new c_tag(null);
+        rtag[MTD_MERGE](...tags);
+        return rtag;
+    };
+    rt = test_tag_merge(3);
     
     class c_tagtab {
         
         constructor() {
             this[PL_TAGNODE] = {};
+            this[PL_ORDER] = {};
+            this[PL_TAG_BY_ORDER] = {};
+        }
+        
+        [MTD_GET_TAG](key) {
+            
         }
         
         [MTD_REGNODE]() {
