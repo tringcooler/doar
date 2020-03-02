@@ -3,7 +3,7 @@ define(function(require) {
     const [
     
         // for common
-        PR_TAB, PR_ORDER,
+        PR_ORDER,
         PL_SUB,
         MTD_APPEND,
     
@@ -12,15 +12,15 @@ define(function(require) {
         MTD_PREV, MTD_AFTER,
         
         // for tag syntax parser
-        PR_KEY, PR_TAG,
+        PR_TAB,
         MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
         
         // for tag
-        MTD_MONO_NODE, MTD_MERGE,
+        MTD_MONO_NODE, MTD_COMBINE, MTD_MERGE,
         
         // for tag tab
         PL_TAGNODE, PL_ORDER, PL_TAG_BY_ORDER,
-        MTD_GET_TAG, MTD_REGNODE,
+        MTD_MONO_TAG, MTD_GET_TAG, MTD_NEW_TAG,
         
     ] = require('core/util').symgen();
     
@@ -83,8 +83,7 @@ define(function(require) {
         constructor(tab) {
             this[PR_TAB] = tab;
             this[PL_SUB] = [];
-            this[PR_KEY] = '';
-            this[PR_TAG] = null;
+            this[PR_ORDER] = 0;
         }
         
         [MTD_PARSE_LAYER](src, stk = [], is_first = true) {
@@ -101,16 +100,17 @@ define(function(require) {
             }
             let nxt;
             if(is_last) {
-                if(this[MTD_PARSE_POST]() === null) {
+                let tag = this[MTD_PARSE_POST]();
+                if(tag === null) {
                     return null;
                 }
                 if(stk.length === 0 && is_end) {
-                    return this;
+                    return tag;
                 } else if(stk.length === 0 || is_end) {
                     return null;
                 }
                 nxt = stk.pop();
-                nxt[MTD_APPEND](this);
+                nxt[MTD_APPEND](tag);
             } else {
                 nxt = new c_tag_syntax_parser(this[PR_TAB]);
                 stk.push(this);
@@ -129,57 +129,36 @@ define(function(require) {
                 } else if(!nd) {
                     continue;
                 }
-                this[MTD_APPEND](nd);
+                let tag = this[PR_TAB][MTD_MONO_TAG](nd);
+                this[MTD_APPEND](tag);
             }
         }
         
-        [MTD_APPEND](sub) {
-            let skey;
-            let has_sub = (sub instanceof c_tag_syntax_parser);
-            if(has_sub) {
-                if(sub[PL_SUB].length > 1) {
-                    skey = TS_L_IN + sub[PR_KEY] + TS_L_OUT;
-                } else {
-                    skey = sub[PR_KEY];
-                    has_sub = false;
-                }
-            } else {
-                skey = sub;
-            }
-            if(this[PR_KEY]) {
-                this[PR_KEY] += TS_SEP + skey;
-            } else {
-                this[PR_KEY] += skey;
-            }
-            this[PL_SUB].push([has_sub, skey]);
+        [MTD_APPEND](tag) {
+            this[PL_SUB].push(tag);
+            this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], tag[PR_ORDER]);
         }
         
         [MTD_PARSE_POST]() {
-            //TODO: hash cache
-            let key = this[PR_KEY];
-            let tag = this[PR_TAB][MTD_GET_TAG](key);
+            let order = this[PR_ORDER];
+            let tag = this[PR_TAB][MTD_GET_TAG](order);
             if(!tag) {
-                tag = this[PR_TAB][MTD_NEW_TAG]();
-                for(let [has_sub, skey] of this[PL_SUB]) {
-                    let stag;
-                    if(has_sub) {
-                        stag = this[PR_TAB][MTD_GET_TAG](skey);
-                    } else {
-                        stag = this[PR_TAB][MTD_MONO_TAG](skey);
-                    }
-                    tag[MTD_APPEND](stag);
+                if(this[PL_SUB].length > 1) {
+                    tag = this[PR_TAB][MTD_NEW_TAG](order);
+                    tag[MTD_COMBINE](this[PL_SUB]);
+                } else {
+                    //assert(this[PL_SUB].length === 1);
+                    tag = this[PL_SUB][0];
                 }
-                this[PR_TAB][MTD_REG_TAG](key, tag);
             }
-            this[PR_TAG] = tag;
+            return tag;
         }
         
     }
     
     class c_tag {
         
-        constructor(tab) {
-            this[PR_TAB] = tab;
+        constructor() {
             this[PL_SUB] = [];
             this[PR_ORDER] = 0;
             //this[FLG_MONO] = false;
@@ -205,7 +184,13 @@ define(function(require) {
             this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], dst[PR_ORDER]);
         }
         
-        [MTD_MERGE](...stags) {
+        [MTD_COMBINE](stags) {
+            for(let stag of stags) {
+                this[MTD_APPEND](stag);
+            }
+        }
+        
+        [MTD_MERGE](stags) {
             let sidxs = [],
                 slens = [],
                 itags = [];
@@ -243,21 +228,6 @@ define(function(require) {
         
     }
     
-    let test_tag_merge = function(n=3) {
-        let tags = [...Array(n)].map(v=>new c_tag(null));
-        for(let i = 1; i < 20; i += 0.5 * n) {
-            for(let j = 0; j < n; j++) {
-                let _t = new c_tag(null);
-                _t[PR_ORDER] = i + 0.5 * j;
-                tags[j][MTD_APPEND](_t);
-            }
-        }
-        let rtag = new c_tag(null);
-        rtag[MTD_MERGE](...tags);
-        return rtag;
-    };
-    rt = test_tag_merge(3);
-    
     class c_tagtab {
         
         constructor() {
@@ -266,11 +236,15 @@ define(function(require) {
             this[PL_TAG_BY_ORDER] = {};
         }
         
-        [MTD_GET_TAG](key) {
+        [MTD_MONO_TAG](key) {
             
         }
         
-        [MTD_REGNODE]() {
+        [MTD_GET_TAG](order) {
+            
+        }
+        
+        [MTD_NEW_TAG](order) {
             
         }
         
