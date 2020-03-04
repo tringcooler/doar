@@ -123,10 +123,11 @@ define(function(require) {
             let nl = nodes.length;
             for(let ni = 0; ni < nl; ni++) {
                 let nd = nodes[ni].trim();
-                let _empty = ( (!is_first && ni == 0) || (!is_last && ni == nl - 1) );
-                if(!_empty == !nd && nl > 1) {
+                let _is_empty = !nd;
+                let _should_empty = ( (!is_first && ni === 0) || (!is_last && ni === nl - 1) );
+                if(_should_empty !== _is_empty && nl > 1) {
                     return null;
-                } else if(!nd) {
+                } else if(_is_empty) {
                     continue;
                 }
                 let tag = this[PR_TAB][MTD_MONO_TAG](nd);
