@@ -5,7 +5,7 @@ define(function(require) {
         // for common
         PR_ORDER,
         PL_SUB,
-        MTD_APPEND,
+        MTD_APPEND, MTD_DECO_PREFIX,
     
         // for tag node
         PR_PREV, PR_SL_ORDER,
@@ -13,7 +13,8 @@ define(function(require) {
         
         // for tag syntax parser
         PR_TAB,
-        MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_POST,
+        SQ_PREFIX,
+        MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_PREFIX, MTD_PARSE_POST,
         
         // for tag
         MTD_MONO_NODE, MTD_COMBINE, MTD_MERGE,
@@ -73,9 +74,9 @@ define(function(require) {
     }
     
     const [
-        TS_L_IN, TS_L_OUT, TS_SEP, TS_INV, TS_CLS,
+        TS_L_IN, TS_L_OUT, TS_SEP, TS_L_PREFIX,
     ] = [
-        '(', ')', ':', '$', '*',
+        '(', ')', ':', '$*',
     ];
     
     class c_tag_syntax_parser {
@@ -84,6 +85,7 @@ define(function(require) {
             this[PR_TAB] = tab;
             this[PL_SUB] = [];
             this[PR_ORDER] = 0;
+            this[SQ_PREFIX] = [];
         }
         
         [MTD_PARSE_LAYER](src, stk = [], is_first = true) {
@@ -123,6 +125,7 @@ define(function(require) {
             let nl = nodes.length;
             for(let ni = 0; ni < nl; ni++) {
                 let nd = nodes[ni].trim();
+                nd = this[MTD_PARSE_PREFIX](nd);
                 let _is_empty = !nd;
                 let _should_empty = ( (!is_first && ni === 0) || (!is_last && ni === nl - 1) );
                 if(_should_empty !== _is_empty && nl > 1) {
@@ -138,7 +141,29 @@ define(function(require) {
             }
         }
         
+        [MTD_PARSE_PREFIX](src) {
+            if(src.length === 0) {
+                return src;
+            }
+            let si = 0;
+            let pfi;
+            while((pfi = TS_L_PREFIX.indexOf(src[si])) >= 0) {
+                this[SQ_PREFIX].push(pfi);
+                si ++;
+            }
+            return src.slice(si);
+        }
+        
+        [MTD_DECO_PREFIX](tag) {
+            let pf;
+            while((pf = this[SQ_PREFIX].pop()) !== undefined) {
+                tag = tag[MTD_DECO_PREFIX](pf);
+            }
+            return tag;
+        }
+        
         [MTD_APPEND](tag) {
+            tag = this[MTD_DECO_PREFIX](tag);
             this[PL_SUB].push(tag);
             this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], tag[PR_ORDER]);
         }
