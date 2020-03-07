@@ -261,6 +261,21 @@ define(function(require) {
         
     }
     
+    class c_tag_context {
+        
+        constructor(tag) {
+            this[PR_TAG] = tag;
+            this[SQ_ARG_TOK] = [];
+        }
+        
+        [MTD_COMBINE](sctxs) {
+        }
+        
+        [MTD_MERGE](sctxs) {
+        }
+        
+    }
+    
     class c_tagtab {
         
         constructor() {
