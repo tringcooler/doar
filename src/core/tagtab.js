@@ -27,11 +27,13 @@ define(function(require) {
     
     // freegroup-2 float key in real field
     const CST_FG2_FK_MULT = Math.PI / 3;
+    const CST_FG2_FK_REV = 3 / Math.PI;
     const CST_FG2_FK_ADD = Math.E / 3;
     const CST_FG2_FK_MXPREC = 15;
     const f_fg2_fl = {};
     f_fg2_fl.a = key => key + 1;
     f_fg2_fl.b = key => key * CST_FG2_FK_MULT;
+    f_fg2_fl.b = key => CST_FG2_FK_REV + 1 / (key - CST_FG2_FK_REV);
     f_fg2_fl.append = (src, dst) => src + 1 / (dst + CST_FG2_FK_ADD);
     f_fg2_fl.merge = (...keys) => {
         let rkey = 0;
@@ -74,9 +76,9 @@ define(function(require) {
     }
     
     const [
-        TS_L_IN, TS_L_OUT, TS_SEP, TS_L_PREFIX,
+        TS_L_IN, TS_L_OUT, TS_SEP, TS_L_PREFIX, TS_N_INV, TS_N_ARG,
     ] = [
-        '(', ')', ':', '$*',
+        '(', ')', ':', '', '$', '*',
     ];
     
     class c_tag_syntax_parser {
@@ -142,7 +144,7 @@ define(function(require) {
         }
         
         [MTD_PARSE_PREFIX](src) {
-            if(src.length === 0) {
+            if(!TS_L_PREFIX || src.length === 0) {
                 return src;
             }
             let si = 0;
@@ -155,9 +157,11 @@ define(function(require) {
         }
         
         [MTD_DECO_PREFIX](tag) {
-            let pf;
-            while((pf = this[SQ_PREFIX].pop()) !== undefined) {
-                tag = tag[MTD_DECO_PREFIX](pf);
+            if(TS_L_PREFIX) {
+                let pf;
+                while((pf = this[SQ_PREFIX].pop()) !== undefined) {
+                    tag = tag[MTD_DECO_PREFIX](pf);
+                }
             }
             return tag;
         }
