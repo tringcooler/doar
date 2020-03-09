@@ -26,14 +26,17 @@ define(function(require) {
     ] = require('core/util').symgen();
     
     // freegroup-2 float key in real field
-    const CST_FG2_FK_MULT = Math.PI / 3;
-    const CST_FG2_FK_REV = 3 / Math.PI;
-    const CST_FG2_FK_ADD = Math.E / 3;
-    const CST_FG2_FK_MXPREC = 15;
+    const 
+        CST_FG2_FK_MULT = Math.PI / 3,
+        CST_FG2_FK_REV = 3 / Math.PI,
+        CST_FG2_FK_ADD = Math.E / 3,
+        CST_FG2_FK_NOT = 3 / Math.E,
+        CST_FG2_FK_MXPREC = 15;
     const f_fg2_fl = {};
     f_fg2_fl.a = key => key + 1;
     f_fg2_fl.b = key => key * CST_FG2_FK_MULT;
-    f_fg2_fl.b = key => CST_FG2_FK_REV + 1 / (key - CST_FG2_FK_REV);
+    f_fg2_fl.r = key => CST_FG2_FK_REV + 1 / (key - CST_FG2_FK_REV);
+    f_fg2_fl.not = key => CST_FG2_FK_NOT + 1 / (key - CST_FG2_FK_NOT);
     f_fg2_fl.append = (src, dst) => src + 1 / (dst + CST_FG2_FK_ADD);
     f_fg2_fl.merge = (...keys) => {
         let rkey = 0;
