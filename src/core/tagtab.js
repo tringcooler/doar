@@ -5,7 +5,7 @@ define(function(require) {
         // for common
         PR_ORDER,
         PL_SUB,
-        MTD_APPEND, MTD_DECO_PREFIX,
+        MTD_APPEND,
     
         // for tag node
         PR_PREV, PR_SL_ORDER,
@@ -14,10 +14,11 @@ define(function(require) {
         // for tag syntax parser
         PR_TAB,
         SQ_PREFIX,
-        MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_PREFIX, MTD_PARSE_POST,
+        MTD_PARSE_LAYER, MTD_PARSE_NODES, MTD_PARSE_PREFIX, MTD_DECO_PREFIX, MTD_DECO_TAG, MTD_PARSE_POST,
         
         // for tag
-        MTD_MONO_NODE, MTD_COMBINE, MTD_MERGE,
+        FLG_NOT,
+        MTD_MONO_NODE, MTD_COMBINE, MTD_MERGE, MTD_DECO_NOT,
         
         // for tag tab
         PL_TAGNODE, PL_TAGORDER, PL_TAG_BY_ORDER,
@@ -79,10 +80,16 @@ define(function(require) {
     }
     
     const [
-        TS_L_IN, TS_L_OUT, TS_SEP, TS_L_PREFIX, TS_N_INV, TS_N_ARG,
+        TS_L_IN, TS_L_OUT, TS_SEP, TS_N_INV, TS_N_ARG,
     ] = [
-        '(', ')', ':', '', '$', '*',
+        '(', ')', ':', '$', '*',
     ];
+    const
+        TS_L_PREFIX = '!',
+        TD_MTD_L_PREFIX = [
+            [f_fg2_fl.not, MTD_DECO_NOT],
+        ];
+    
     
     class c_tag_syntax_parser {
         
@@ -163,10 +170,21 @@ define(function(require) {
             if(TS_L_PREFIX) {
                 let pf;
                 while((pf = this[SQ_PREFIX].pop()) !== undefined) {
-                    tag = tag[MTD_DECO_PREFIX](pf);
+                    tag = this[PR_TAB][MTD_DECO_PREFIX](tag, pf);
                 }
             }
             return tag;
+        }
+        
+        [MTD_DECO_TAG](stag, di) {
+            let [ord_f, tag_mtd] = TD_MTD_L_PREFIX[di];
+            let order = ord_f(stag[PR_ORDER]);
+            let dtag = this[PR_TAB][MTD_GET_TAG](order);
+            if(!dtag) {
+                dtag = this[PR_TAB][MTD_NEW_TAG](order);
+                dtag[tag_mtd]();
+            }
+            return dtag;
         }
         
         [MTD_APPEND](tag) {
@@ -198,6 +216,7 @@ define(function(require) {
             this[PL_SUB] = [];
             this[PR_ORDER] = 0;
             //this[FLG_MONO] = false;
+            this[FLG_NOT] = false;
         }
         
         [MTD_MONO_NODE](node) {
@@ -260,6 +279,12 @@ define(function(require) {
                     itags.splice(min_ii, 1);
                 }
             }
+        }
+        
+        [MTD_DECO_NOT]() {
+            //assert(!this[FLG_NOT]);
+            this[FLG_NOT] = !this[FLG_NOT];
+            this[PR_ORDER] = f_fg2_fl.not(this[PR_ORDER]);
         }
         
     }
