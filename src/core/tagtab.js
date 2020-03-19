@@ -6,6 +6,11 @@ define(function(require) {
         PR_ORDER,
         PL_SUB,
         MTD_APPEND,
+        
+        // for order
+        SQ_LR,
+        MTD_UPD_ORDER,
+        PP_ORDER,
     
         // for tag node
         PR_PREV, PR_SL_ORDER,
@@ -47,6 +52,53 @@ define(function(require) {
         return rkey;
     };
     f_fg2_fl.v2k = v => v.toPrecision(CST_FG2_FK_MXPREC);
+    
+    const
+        ORD_BOT = 0,
+        ORD_LEN = 1,
+        ORD_MAX_PREC = 52;
+    class c_order {
+        
+        constructor() {
+            this[SQ_LR] = [];
+            this[PR_ORDER] = null;
+        }
+        
+        [MTD_UPD_ORDER]() {
+            let vdir = 1;
+            let cbot = ORD_BOT;
+            let clen = ORD_LEN;
+            let cprec = 0;
+            let mprec = null;
+            for(let v of this[SQ_LR]) {
+                //assert(v >= 0);
+                v += 1;
+                let ctop = cbot + clen;
+                clen *= 1 / 2 ** v;
+                cprec += v;
+                if(mprec === null) {
+                    //assert(vdir > 0);
+                    mprec = cprec;
+                }
+                if(cprec - mprec > ORD_MAX_PREC) {
+                    throw Error('order precision overflow');
+                }
+                if(vdir < 0) {
+                    cbot = ctop - clen;
+                }
+                vdir = - vdir;
+            }
+            this[PR_ORDER] = cbot + clen / 2;
+        }
+        
+        [PP_ORDER]() {
+            if(this[PR_ORDER] === null) {
+                this[MTD_UPDATE];
+            }
+            return this[PR_ORDER];
+        }
+        
+    }
     
     let id_tagnode = 1;
     class c_tagnode {
