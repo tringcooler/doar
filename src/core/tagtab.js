@@ -59,8 +59,11 @@ define(function(require) {
         ORD_MAX_PREC = 52;
     class c_order {
         
-        constructor() {
-            this[SQ_LR] = [];
+        constructor(sq = null) {
+            if(sq === null) {
+                sq = [];
+            }
+            this[SQ_LR] = sq;
             this[PR_ORDER] = null;
         }
         
@@ -96,6 +99,10 @@ define(function(require) {
                 this[MTD_UPDATE];
             }
             return this[PR_ORDER];
+        }
+        
+        [MTD_APPEND](dst) {
+            
         }
         
     }
