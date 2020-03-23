@@ -77,15 +77,19 @@ define(function(require) {
             for(let rlv of this[SQ_RL]) {
                 let vdir = -1;
                 for(let v of rlv) {
-                    //assert(v >= 0);
+                    vdir = - vdir;
                     if(is_1st) {
                         //assert(vdir > 0);
                         is_1st = false;
                         if(v === 0) {
-                            continue;
+                            v = null;
                         }
                     }
-                    vdir = - vdir;
+                    if(v === null) {
+                        //assert(vdir < 0);
+                        continue;
+                    }
+                    //assert(v >= 0);
                     v += 1;
                     let ctop = cbot + clen;
                     clen *= 1 / 2 ** v;
@@ -111,12 +115,18 @@ define(function(require) {
             return this[PR_ORDER];
         }
         
-        [MTD_APPEND](dst) {
+        [MTD_APPEND](dsts) {
             //assert(this[FLG_IS_SIMPLE]);
+            let dst_sq = this[SQ_RL].slice(0);
+            for(let dst of dsts) {
+                dst_sq.push([0, dst]);
+            }
+            return new c_order(dst_sq);
         }
         
         [MTD_MERGE](srcs) {
             //this[FLG_IS_SIMPLE] = false;
+            
         }
         
     }
