@@ -65,6 +65,7 @@ define(function(require) {
             }
             this[SQ_LR] = sq;
             this[PR_ORDER] = null;
+            //this[FLG_IS_SIMPLE] = true;
         }
         
         [MTD_UPD_ORDER]() {
@@ -102,7 +103,11 @@ define(function(require) {
         }
         
         [MTD_APPEND](dst) {
-            
+            //assert(this[FLG_IS_SIMPLE]);
+        }
+        
+        [MTD_MERGE](srcs) {
+            //this[FLG_IS_SIMPLE] = false;
         }
         
     }
