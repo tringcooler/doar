@@ -8,7 +8,7 @@ define(function(require) {
         MTD_APPEND,
         
         // for order
-        SQ_LR,
+        SQ_RL,
         MTD_UPD_ORDER,
         PP_ORDER,
     
@@ -63,34 +63,43 @@ define(function(require) {
             if(sq === null) {
                 sq = [];
             }
-            this[SQ_LR] = sq;
+            this[SQ_RL] = sq;
             this[PR_ORDER] = null;
             //this[FLG_IS_SIMPLE] = true;
         }
         
         [MTD_UPD_ORDER]() {
-            let vdir = 1;
             let cbot = ORD_BOT;
             let clen = ORD_LEN;
             let cprec = 0;
             let mprec = null;
-            for(let v of this[SQ_LR]) {
-                //assert(v >= 0);
-                v += 1;
-                let ctop = cbot + clen;
-                clen *= 1 / 2 ** v;
-                cprec += v;
-                if(mprec === null) {
-                    //assert(vdir > 0);
-                    mprec = cprec;
+            let is_1st = true;
+            for(let rlv of this[SQ_RL]) {
+                let vdir = -1;
+                for(let v of rlv) {
+                    //assert(v >= 0);
+                    if(is_1st) {
+                        //assert(vdir > 0);
+                        is_1st = false;
+                        if(v === 0) {
+                            continue;
+                        }
+                    }
+                    vdir = - vdir;
+                    v += 1;
+                    let ctop = cbot + clen;
+                    clen *= 1 / 2 ** v;
+                    cprec += v;
+                    if(mprec === null) {
+                        mprec = cprec;
+                    }
+                    if(cprec - mprec > ORD_MAX_PREC) {
+                        throw Error('order precision overflow');
+                    }
+                    if(vdir > 0) {
+                        cbot = ctop - clen;
+                    }
                 }
-                if(cprec - mprec > ORD_MAX_PREC) {
-                    throw Error('order precision overflow');
-                }
-                if(vdir < 0) {
-                    cbot = ctop - clen;
-                }
-                vdir = - vdir;
             }
             this[PR_ORDER] = cbot + clen / 2;
         }
