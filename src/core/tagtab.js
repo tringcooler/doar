@@ -125,8 +125,42 @@ define(function(require) {
         }
         
         [MTD_MERGE](srcs) {
+            //assert(this[SQ_RL].length === 0);
             //this[FLG_IS_SIMPLE] = false;
-            
+            if(this[SQ_RL].length > 0) {
+                srcs = [this].concat(srcs);
+            }
+            let sqs = [],
+                sqr = [],
+                sqi = [],
+                sql = [],
+                ci = 0,
+                cl = srcs.length,
+                vc = cl;
+            for(let src of srcs) {
+                let rshft = 0;
+                while(src instanceof Array) {
+                    src = src[0];
+                    rshft += 1;
+                }
+                sqs.push(src[SQ_RL]);
+                sqr.push(rshft);
+                sqi.push(0);
+                sql.push(src.length);
+            }
+            let dst_sq = [],
+                rv_sq = [],
+                rvi = 0;
+            while(vc > 0) {
+                let csq = sqs[ci];
+                let cr, cv;
+                if(sqi[ci] < sql[ci]) {
+                    [cr, cv] = csq[sqi[ci]];
+                } else {
+                    //cr = 
+                    cv = null;
+                }
+            }
         }
         
     }
