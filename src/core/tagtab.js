@@ -5,11 +5,11 @@ define(function(require) {
         // for common
         PR_ORDER,
         PL_SUB,
-        MTD_APPEND,
+        MTD_APPEND, MTD_MERGE,
         
         // for order
         SQ_RL,
-        MTD_UPD_ORDER,
+        MTD_UPD_ORDER, MTD_ADD,
         PP_ORDER,
     
         // for tag node
@@ -23,7 +23,7 @@ define(function(require) {
         
         // for tag
         FLG_NOT,
-        MTD_MONO_NODE, MTD_COMBINE, MTD_MERGE, MTD_DECO_NOT,
+        MTD_MONO_NODE, MTD_COMBINE, MTD_DECO_NOT,
         
         // for tag tab
         PL_TAGNODE, PL_TAGORDER, PL_TAG_BY_ORDER,
@@ -124,6 +124,14 @@ define(function(require) {
             return new c_order(dst_sq);
         }
         
+        [MTD_ADD](dst, val = 1) {
+            //assert(this[FLG_IS_SIMPLE]);
+            let dst_sq = this[SQ_RL].slice(0, -1);
+            let [sr, sv] = this[SQ_RL][this[SQ_RL].length - 1];
+            dst_sq.push([sr, sv + val]);
+            return new c_order(dst_sq);
+        }
+        
         [MTD_MERGE](srcs) {
             //assert(this[SQ_RL].length === 0);
             //this[FLG_IS_SIMPLE] = false;
@@ -132,6 +140,8 @@ define(function(require) {
             }
             let sqs = [],
                 sqr = [],
+                sqp = [],
+                sqpv = [],
                 sqi = [],
                 sql = [],
                 ci = 0,
@@ -145,22 +155,40 @@ define(function(require) {
                 }
                 sqs.push(src[SQ_RL]);
                 sqr.push(rshft);
+                sqp.push([]);
+                sqpv.push(false);
                 sqi.push(0);
                 sql.push(src.length);
             }
             let dst_sq = [],
-                rv_sq = [],
-                rvi = 0;
+                sec_1st = true;
             while(vc > 0) {
-                let csq = sqs[ci];
                 let cr, cv;
                 if(sqi[ci] < sql[ci]) {
-                    [cr, cv] = csq[sqi[ci]];
-                } else {
-                    //cr = 
+                    [cr, cv] = sqs[ci][sqi[ci]];
+                    if(cr > 0) {
+                        cr += sqr[ci];
+                    }
+                } else if(sqpv[ci]) {
+                    let cpad = sqp[ci],
+                        padi = (sqi[ci] - sql[ci]) % cpad.length;
+                    cr = cpad[padi];
                     cv = null;
+                } // else assert(false);
+                if(cr === 0 && !sec_1st) {
+                    sqpv[ci] = true;
+                    ci = (ci + 1) % cl;
+                    sec_1st = true;
+                    continue;
+                } else {
+                    sec_1st = false;
+                }
+                dst_sq.push(cr, cv);
+                if(++sqi[ci] === sql[ci]) {
+                    vc -= 1;
                 }
             }
+            return new c_order(dst_sq);
         }
         
     }
