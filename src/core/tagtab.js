@@ -110,7 +110,7 @@ define(function(require) {
         
         [PP_ORDER]() {
             if(this[PR_ORDER] === null) {
-                this[MTD_UPDATE];
+                this[MTD_UPD_ORDER]();
             }
             return this[PR_ORDER];
         }
@@ -158,11 +158,11 @@ define(function(require) {
                 sqp.push([]);
                 sqpv.push(false);
                 sqi.push(0);
-                sql.push(src.length);
+                sql.push(src[SQ_RL].length);
             }
             let dst_sq = [],
                 sec_1st = true;
-            while(vc > 0) {
+            while(vc > 0 || !(ci === 0 && sec_1st)) {
                 let cr, cv;
                 if(sqi[ci] < sql[ci]) {
                     [cr, cv] = sqs[ci][sqi[ci]];
@@ -175,15 +175,22 @@ define(function(require) {
                     cr = cpad[padi];
                     cv = null;
                 } // else assert(false);
-                if(cr === 0 && !sec_1st) {
-                    sqpv[ci] = true;
-                    ci = (ci + 1) % cl;
-                    sec_1st = true;
-                    continue;
-                } else {
-                    sec_1st = false;
+                let scr = cr;
+                if(cr === 0) {
+                    if(!sec_1st) {
+                        sqpv[ci] = true;
+                        ci = (ci + 1) % cl;
+                        sec_1st = true;
+                        continue;
+                    } else if(ci > 0) {
+                        cr = 1;
+                    }
                 }
-                dst_sq.push(cr, cv);
+                sec_1st = false;
+                dst_sq.push([cr, cv]);
+                if(!sqpv[ci]) {
+                    sqp[ci].push(scr);
+                }
                 if(++sqi[ci] === sql[ci]) {
                     vc -= 1;
                 }
@@ -192,6 +199,17 @@ define(function(require) {
         }
         
     }
+    tst1 = (function() {
+        let shw = o => {console.log(o[SQ_RL]);console.log(o[PP_ORDER]());};
+        let o1 = new c_order();
+        let o2 = o1[MTD_APPEND]([1,2,3,4,5]);
+        shw(o2);
+        let o3 = o2[MTD_APPEND]([7,8])[MTD_MERGE]([o2[MTD_ADD]()/*[MTD_APPEND]([7,8])*/]);
+        shw(o3);
+        let od = o2[MTD_ADD](3)[MTD_APPEND]([9, 8, 7])[MTD_MERGE]([[o3]]);
+        shw(od);
+        return od;
+    })();
     
     let id_tagnode = 1;
     class c_tagnode {
