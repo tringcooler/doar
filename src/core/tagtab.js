@@ -70,6 +70,7 @@ define(function(require) {
         
         [MTD_UPD_ORDER]() {
             let cbot = ORD_BOT;
+            let cbot_sq = [];
             let clen = ORD_LEN;
             let cprec = 0;
             let mprec = null;
@@ -91,21 +92,25 @@ define(function(require) {
                     }
                     //assert(v >= 0);
                     v += 1;
-                    let ctop = cbot + clen;
+                    let o_clen = clen;
                     clen *= 1 / 2 ** v;
                     cprec += v;
                     if(mprec === null) {
                         mprec = cprec;
                     }
                     if(cprec - mprec > ORD_MAX_PREC) {
-                        throw Error('order precision overflow');
+                        //throw Error('order precision overflow');
+                        cbot_sq.push(cbot);
+                        cbot = 0;
+                        mprec = cprec;
                     }
                     if(vdir > 0) {
-                        cbot = ctop - clen;
+                        cbot = cbot + o_clen - clen;
                     }
                 }
             }
-            this[PR_ORDER] = cbot + clen / 2;
+            cbot_sq.push(cbot + clen / 2);
+            this[PR_ORDER] = cbot_sq;
         }
         
         [PP_ORDER]() {
