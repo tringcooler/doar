@@ -56,7 +56,7 @@ define(function(require) {
     const
         ORD_BOT = 0,
         ORD_LEN = 1,
-        ORD_MAX_PREC = 52;
+        ORD_MAX_PREC = 50;
     class c_order {
         
         constructor(sq = null) {
@@ -92,7 +92,8 @@ define(function(require) {
                     }
                     //assert(v >= 0);
                     v += 1;
-                    let o_clen = clen;
+                    let o_clen = clen,
+                        o_cprec = cprec;
                     clen *= 1 / 2 ** v;
                     cprec += v;
                     if(mprec === null) {
@@ -102,7 +103,7 @@ define(function(require) {
                         //throw Error('order precision overflow');
                         cbot_sq.push(cbot);
                         cbot = 0;
-                        mprec = cprec;
+                        mprec = o_cprec;
                     }
                     if(vdir > 0) {
                         cbot = cbot + o_clen - clen;
