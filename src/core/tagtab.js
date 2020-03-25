@@ -9,7 +9,7 @@ define(function(require) {
         
         // for order
         SQ_RL,
-        MTD_UPD_ORDER, MTD_ADD,
+        MTD_UPD_ORDER, MTD_ADD, MTD_CMP,
         PP_ORDER,
     
         // for tag node
@@ -121,6 +121,35 @@ define(function(require) {
             return this[PR_ORDER];
         }
         
+        [MTD_CMP](dst) {
+            let sv = this[PP_ORDER](),
+                dv = dst[PP_ORDER]();
+            let vi = 0,
+                df = sv[vi] - dv[vi];
+            while(true) {
+                let sn = Math.sign(df);
+                if(sn) {
+                    return sn;
+                }
+                let s = 0,
+                    d = 0,
+                    vvi = 0;
+                vi += 1;
+                if(vi < sv.length) {
+                    vvi += 1;
+                    s = sv[vi];
+                }
+                if(vi < dv.length) {
+                    vvi += 1;
+                    d = dv[vi];
+                }
+                df = s - d;
+                if(!vvi) {
+                    return 0;
+                }
+            }
+        }
+        
         [MTD_APPEND](dsts) {
             //assert(this[FLG_IS_SIMPLE]);
             let dst_sq = this[SQ_RL].slice(0);
@@ -214,6 +243,7 @@ define(function(require) {
         shw(o3);
         let od = o2[MTD_ADD](3)[MTD_APPEND]([9, 8, 7])[MTD_MERGE]([[o3]]);
         shw(od);
+        console.log(od[MTD_CMP](o2), o2[MTD_CMP](o3), o3[MTD_CMP](od), od[MTD_CMP](od));
         return od;
     })();
     
