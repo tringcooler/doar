@@ -52,6 +52,7 @@ define(function(require) {
         return rkey;
     };
     f_fg2_fl.v2k = v => v.toPrecision(CST_FG2_FK_MXPREC);
+    const F_TAG_HASH = f_fg2_fl;
     
     const
         ORD_BOT = 0,
@@ -258,9 +259,9 @@ define(function(require) {
             //assert(!(PR_PREV in this));
             this[PR_PREV] = prev;
             if(prev) {
-                this[PR_ORDER] = f_fg2_fl.a(prev[PR_SL_ORDER]);
+                this[PR_ORDER] = F_TAG_HASH.a(prev[PR_SL_ORDER]);
                 prev[PR_SL_ORDER] = this[PR_ORDER];
-                this[PR_SL_ORDER] = f_fg2_fl.b(this[PR_ORDER]);
+                this[PR_SL_ORDER] = F_TAG_HASH.b(this[PR_ORDER]);
             } else {
                 this[PR_ORDER] = id_tagnode ++;
             }
@@ -286,7 +287,7 @@ define(function(require) {
     const
         TS_L_PREFIX = '!',
         TD_MTD_L_PREFIX = [
-            [f_fg2_fl.not, MTD_DECO_NOT],
+            [F_TAG_HASH.not, MTD_DECO_NOT],
         ];
     
     
@@ -389,7 +390,7 @@ define(function(require) {
         [MTD_APPEND](tag) {
             tag = this[MTD_DECO_PREFIX](tag);
             this[PL_SUB].push(tag);
-            this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], tag[PR_ORDER]);
+            this[PR_ORDER] = F_TAG_HASH.append(this[PR_ORDER], tag[PR_ORDER]);
         }
         
         [MTD_PARSE_POST]() {
@@ -435,7 +436,7 @@ define(function(require) {
                 }
             }
             this[PL_SUB].splice(i, 0, dst);
-            this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], dst[PR_ORDER]);
+            this[PR_ORDER] = F_TAG_HASH.append(this[PR_ORDER], dst[PR_ORDER]);
         }
         
         [MTD_COMBINE](stags) {
@@ -472,7 +473,7 @@ define(function(require) {
                 let itag = itags[min_ii],
                     sub0 = _gsub0(itag);
                 //assert(sub0[PR_ORDER] > last_order); last_order = sub0[PR_ORDER];
-                this[PR_ORDER] = f_fg2_fl.append(this[PR_ORDER], sub0[PR_ORDER]);
+                this[PR_ORDER] = F_TAG_HASH.append(this[PR_ORDER], sub0[PR_ORDER]);
                 this[PL_SUB].push(sub0);
                 if(++sidxs[itag] >= slens[itag]) {
                     itags.splice(min_ii, 1);
@@ -483,7 +484,7 @@ define(function(require) {
         [MTD_DECO_NOT]() {
             //assert(!this[FLG_NOT]);
             this[FLG_NOT] = !this[FLG_NOT];
-            this[PR_ORDER] = f_fg2_fl.not(this[PR_ORDER]);
+            this[PR_ORDER] = F_TAG_HASH.not(this[PR_ORDER]);
         }
         
     }
