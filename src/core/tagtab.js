@@ -3,7 +3,7 @@ define(function(require) {
     const [
     
         // for common
-        PR_ORDER,
+        PR_ORDER, PR_OHASH,
         PL_SUB,
         MTD_APPEND, MTD_MERGE,
         
@@ -26,7 +26,7 @@ define(function(require) {
         MTD_MONO_NODE, MTD_COMBINE, MTD_DECO_NOT,
         
         // for tag tab
-        PL_TAGNODE, PL_TAGORDER, PL_TAG_BY_ORDER,
+        PL_TAGNODE, PL_TAGORDER, PL_TAG_BY_OHASH,
         MTD_MONO_TAG, MTD_GET_TAG, MTD_NEW_TAG,
         
     ] = require('core/util').symgen();
@@ -52,7 +52,7 @@ define(function(require) {
         return rkey;
     };
     f_fg2_fl.v2k = v => v.toPrecision(CST_FG2_FK_MXPREC);
-    const F_TAG_HASH = f_fg2_fl;
+    const F_TAG_OHASH = f_fg2_fl;
     
     const
         ORD_BOT = 0,
@@ -259,9 +259,9 @@ define(function(require) {
             //assert(!(PR_PREV in this));
             this[PR_PREV] = prev;
             if(prev) {
-                this[PR_ORDER] = F_TAG_HASH.a(prev[PR_SL_ORDER]);
+                this[PR_ORDER] = F_TAG_OHASH.a(prev[PR_SL_ORDER]);
                 prev[PR_SL_ORDER] = this[PR_ORDER];
-                this[PR_SL_ORDER] = F_TAG_HASH.b(this[PR_ORDER]);
+                this[PR_SL_ORDER] = F_TAG_OHASH.b(this[PR_ORDER]);
             } else {
                 this[PR_ORDER] = id_tagnode ++;
             }
@@ -287,7 +287,7 @@ define(function(require) {
     const
         TS_L_PREFIX = '!',
         TD_MTD_L_PREFIX = [
-            [F_TAG_HASH.not, MTD_DECO_NOT],
+            [F_TAG_OHASH.not, MTD_DECO_NOT],
         ];
     
     
@@ -296,7 +296,7 @@ define(function(require) {
         constructor(tab) {
             this[PR_TAB] = tab;
             this[PL_SUB] = [];
-            this[PR_ORDER] = 0;
+            this[PR_OHASH] = 0;
             this[SQ_PREFIX] = [];
         }
         
@@ -378,10 +378,10 @@ define(function(require) {
         
         [MTD_DECO_TAG](stag, di) {
             let [ord_f, tag_mtd] = TD_MTD_L_PREFIX[di];
-            let order = ord_f(stag[PR_ORDER]);
-            let dtag = this[PR_TAB][MTD_GET_TAG](order);
+            let ohash = ord_f(stag[PR_OHASH]);
+            let dtag = this[PR_TAB][MTD_GET_TAG](ohash);
             if(!dtag) {
-                dtag = this[PR_TAB][MTD_NEW_TAG](order);
+                dtag = this[PR_TAB][MTD_NEW_TAG](ohash);
                 dtag[tag_mtd]();
             }
             return dtag;
@@ -390,15 +390,15 @@ define(function(require) {
         [MTD_APPEND](tag) {
             tag = this[MTD_DECO_PREFIX](tag);
             this[PL_SUB].push(tag);
-            this[PR_ORDER] = F_TAG_HASH.append(this[PR_ORDER], tag[PR_ORDER]);
+            this[PR_OHASH] = F_TAG_OHASH.append(this[PR_OHASH], tag[PR_OHASH]);
         }
         
         [MTD_PARSE_POST]() {
-            let order = this[PR_ORDER];
-            let tag = this[PR_TAB][MTD_GET_TAG](order);
+            let ohash = this[PR_OHASH];
+            let tag = this[PR_TAB][MTD_GET_TAG](ohash);
             if(!tag) {
                 if(this[PL_SUB].length > 1) {
-                    tag = this[PR_TAB][MTD_NEW_TAG](order);
+                    tag = this[PR_TAB][MTD_NEW_TAG](ohash);
                     tag[MTD_COMBINE](this[PL_SUB]);
                 } else {
                     //assert(this[PL_SUB].length === 1);
@@ -436,7 +436,7 @@ define(function(require) {
                 }
             }
             this[PL_SUB].splice(i, 0, dst);
-            this[PR_ORDER] = F_TAG_HASH.append(this[PR_ORDER], dst[PR_ORDER]);
+            this[PR_ORDER] = F_TAG_OHASH.append(this[PR_ORDER], dst[PR_ORDER]);
         }
         
         [MTD_COMBINE](stags) {
@@ -473,7 +473,7 @@ define(function(require) {
                 let itag = itags[min_ii],
                     sub0 = _gsub0(itag);
                 //assert(sub0[PR_ORDER] > last_order); last_order = sub0[PR_ORDER];
-                this[PR_ORDER] = F_TAG_HASH.append(this[PR_ORDER], sub0[PR_ORDER]);
+                this[PR_ORDER] = F_TAG_OHASH.append(this[PR_ORDER], sub0[PR_ORDER]);
                 this[PL_SUB].push(sub0);
                 if(++sidxs[itag] >= slens[itag]) {
                     itags.splice(min_ii, 1);
@@ -484,7 +484,7 @@ define(function(require) {
         [MTD_DECO_NOT]() {
             //assert(!this[FLG_NOT]);
             this[FLG_NOT] = !this[FLG_NOT];
-            this[PR_ORDER] = F_TAG_HASH.not(this[PR_ORDER]);
+            this[PR_ORDER] = F_TAG_OHASH.not(this[PR_ORDER]);
         }
         
     }
@@ -509,41 +509,41 @@ define(function(require) {
         constructor() {
             this[PL_TAGNODE] = {};
             this[PL_TAGORDER] = {};
-            this[PL_TAG_BY_ORDER] = {};
+            this[PL_TAG_BY_OHASH] = {};
         }
         
         [MTD_MONO_TAG](key) {
             if(key in this[PL_TAGORDER]) {
-                let order = this[PL_TAGORDER][key];
-                //assert(order in this[PL_TAG_BY_ORDER]);
-                return this[PL_TAG_BY_ORDER][order];
+                let ohash = this[PL_TAGORDER][key];
+                //assert(ohash in this[PL_TAG_BY_OHASH]);
+                return this[PL_TAG_BY_OHASH][ohash];
             }
             if(key in this[PL_TAGNODE]) {
                 let node = this[PL_TAGNODE][key];
                 let tag = new c_tag();
                 tag[MTD_MONO_NODE](node);
-                let order = tag[PR_ORDER];
-                this[PL_TAGORDER][key] = order;
-                this[PL_TAG_BY_ORDER][order] = tag;
+                let ohash = tag[PR_OHASH];
+                this[PL_TAGORDER][key] = ohash;
+                this[PL_TAG_BY_OHASH][ohash] = tag;
                 return tag;
             }
             return null;
         }
         
-        [MTD_GET_TAG](order) {
-            if(order in this[PL_TAG_BY_ORDER]) {
-                return this[PL_TAG_BY_ORDER][order];
+        [MTD_GET_TAG](ohash) {
+            if(ohash in this[PL_TAG_BY_OHASH]) {
+                return this[PL_TAG_BY_OHASH][ohash];
             } else {
                 return null;
             }
         }
         
-        [MTD_NEW_TAG](order) {
-            if(order in this[PL_TAG_BY_ORDER]) {
+        [MTD_NEW_TAG](ohash) {
+            if(ohash in this[PL_TAG_BY_OHASH]) {
                 return null;
             }
             let tag = new c_tag();
-            this[PL_TAG_BY_ORDER][order] = tag;
+            this[PL_TAG_BY_OHASH][ohash] = tag;
             return tag;
         }
         
