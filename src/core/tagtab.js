@@ -26,7 +26,7 @@ define(function(require) {
         MTD_MONO_NODE, MTD_COMBINE, MTD_DECO_NOT,
         
         // for tag tab
-        PL_TAGNODE, PL_TAGORDER, PL_TAG_BY_OHASH,
+        PL_TAGNODE, PL_TAGOHASH, PL_TAG_BY_OHASH,
         MTD_MONO_TAG, MTD_GET_TAG, MTD_NEW_TAG,
         
     ] = require('core/util').symgen();
@@ -508,13 +508,13 @@ define(function(require) {
         
         constructor() {
             this[PL_TAGNODE] = {};
-            this[PL_TAGORDER] = {};
+            this[PL_TAGOHASH] = {};
             this[PL_TAG_BY_OHASH] = {};
         }
         
         [MTD_MONO_TAG](key) {
-            if(key in this[PL_TAGORDER]) {
-                let ohash = this[PL_TAGORDER][key];
+            if(key in this[PL_TAGOHASH]) {
+                let ohash = this[PL_TAGOHASH][key];
                 //assert(ohash in this[PL_TAG_BY_OHASH]);
                 return this[PL_TAG_BY_OHASH][ohash];
             }
@@ -523,7 +523,7 @@ define(function(require) {
                 let tag = new c_tag();
                 tag[MTD_MONO_NODE](node);
                 let ohash = tag[PR_OHASH];
-                this[PL_TAGORDER][key] = ohash;
+                this[PL_TAGOHASH][key] = ohash;
                 this[PL_TAG_BY_OHASH][ohash] = tag;
                 return tag;
             }
