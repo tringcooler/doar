@@ -254,10 +254,14 @@ define(function(require) {
     tst2 = (function() {
         let shw = o => {console.log(o[SQ_RL]);console.log(o[PP_ORDER]());};
         //let o1 = new c_order([[0, 45], [45, 45], [45, 45]]);
-        let o1 = new c_order([[0, 45], [0, 45], [45, 45]]);
+        //let o1 = new c_order([[0, 45], [0, 45], [45, 45]]);
         //let o1 = new c_order([[45, 45], [45, 45], [45, 45]]);
-        //let o1 = new c_order([[45, 45], [0, 45], [45, 45]]);
+        let o1 = new c_order([[45, 45], [0, 45], [45, 45]]);
         shw(o1);
+        for(let v of o1[PP_ORDER]()) {
+            let dec = v.toString(2)
+            console.log(dec, dec.length)
+        }
         return o1;
     })();
     
