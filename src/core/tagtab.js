@@ -73,7 +73,8 @@ define(function(require) {
             let cbot = ORD_BOT;
             let cbot_sq = [];
             let clen = ORD_LEN;
-            let cprec = 0;
+            let cprec = 0,
+                cprec_m = 0;
             let mprec = null;
             let is_1st = true;
             for(let rlv of this[SQ_RL]) {
@@ -93,18 +94,21 @@ define(function(require) {
                     }
                     //assert(v >= 0);
                     v += 1;
-                    let o_clen = clen,
-                        o_cprec = cprec;
+                    let o_clen = clen;
                     clen *= 1 / 2 ** v;
+                    cprec_m = cprec;
                     cprec += v;
+                    if(vdir < 0) {
+                        cprec_m = cprec;
+                    }
                     if(mprec === null) {
-                        mprec = cprec;
+                        mprec = cprec_m;
                     }
                     if(cprec - mprec > ORD_MAX_PREC) {
                         //throw Error('order precision overflow');
                         cbot_sq.push(cbot);
                         cbot = 0;
-                        mprec = o_cprec;
+                        mprec = cprec_m;
                     }
                     if(vdir > 0) {
                         cbot = cbot + o_clen - clen;
@@ -235,17 +239,26 @@ define(function(require) {
         }
         
     }
-    tst1 = (function() {
+    /*tst1 = (function() {
         let shw = o => {console.log(o[SQ_RL]);console.log(o[PP_ORDER]());};
         let o1 = new c_order();
         let o2 = o1[MTD_APPEND]([1,2,3,4,5]);
         shw(o2);
-        let o3 = o2[MTD_APPEND]([7,8])[MTD_MERGE]([o2[MTD_ADD]()/*[MTD_APPEND]([7,8])*/]);
+        let o3 = o2[MTD_APPEND]([7,8])[MTD_MERGE]([o2[MTD_ADD]()]);//[MTD_APPEND]([7,8])]);
         shw(o3);
         let od = o2[MTD_ADD](3)[MTD_APPEND]([9, 8, 7])[MTD_MERGE]([[o3]]);
         shw(od);
         console.log(od[MTD_CMP](o2), o2[MTD_CMP](o3), o3[MTD_CMP](od), od[MTD_CMP](od));
         return od;
+    })();*/
+    tst2 = (function() {
+        let shw = o => {console.log(o[SQ_RL]);console.log(o[PP_ORDER]());};
+        //let o1 = new c_order([[0, 45], [45, 45], [45, 45]]);
+        let o1 = new c_order([[0, 45], [0, 45], [45, 45]]);
+        //let o1 = new c_order([[45, 45], [45, 45], [45, 45]]);
+        //let o1 = new c_order([[45, 45], [0, 45], [45, 45]]);
+        shw(o1);
+        return o1;
     })();
     
     let id_tagnode = 1;
